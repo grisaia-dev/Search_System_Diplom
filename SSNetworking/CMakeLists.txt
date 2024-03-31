@@ -14,30 +14,38 @@ if(WIN32)
 endif()
 
 if(UNIX)
-	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/boost/unix/include)
-	set(Boost_LIBRARY ${PROJECT_SOURCE_DIR}/lib/boost/unix/lib)
+	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/<enter-a-path-to-include>)
+	set(Boost_LIBRARY ${PROJECT_SOURCE_DIR}/<enter-a-path-to-libs>)
 endif()
 
 find_package(Boost REQUIRED)
 
 set(SOURCE_F
-	${PROJECT_SOURCE_DIR}/src/base.cpp
+	${PROJECT_SOURCE_DIR}/src/server.cpp
+	${PROJECT_SOURCE_DIR}/src/session.cpp
+)
+
+set(HEADER_F
+	${PROJECT_SOURCE_DIR}/include/SSNetworking/server.hpp
+	${PROJECT_SOURCE_DIR}/include/SSNetworking/session.hpp
 )
 
 if(Boost_FOUND)
-	add_library(${PROJECT_NAME} STATIC ${SOURCE_F})
+	add_library(${PROJECT_NAME} SHARED ${SOURCE_F} ${HEADER_F})
 
 	target_include_directories(${PROJECT_NAME}
 		PUBLIC
 			$<INSTALL_INTERFACE:include>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		PRIVATE
 			${Boost_INCLUDE_DIRS}
+		PRIVATE
+			SSHelp
 	)
 
-	target_link_libraries(${PROJECT_NAME} 
+	target_link_libraries(${PROJECT_NAME}
 		PRIVATE
 			${Boost_LIBRARIES}
+			SSHelp
 	)
 endif()
 
