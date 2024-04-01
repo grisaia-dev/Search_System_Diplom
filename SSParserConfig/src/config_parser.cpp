@@ -9,18 +9,18 @@ INIP::Parser::Parser(const std::filesystem::path filePath) {
 		if (!file_ini.is_open())
 			throw Exception_runtime(forEx);
 	} catch (const std::runtime_error& ex) {
-		std::cout << M_HIT << ex.what() << std::endl;
+		std::cout << M_ERROR << ex.what() << std::endl;
 		std::cout << M_HIT << "Creating config file.." << std::endl;
 		create_file_config();
 		file_ini.open(filePath, std::ios::binary | std::ios::in);
 	}
 
-	file_ini.seekg(0, std::ios::end); // Перемещаем указатель что бы узнать размер данных
-	size_t fileSize = file_ini.tellg(); // сохраняем размер данных
-	file_ini.seekg(0, std::ios::beg); // переносим в первоначальное положение
+	file_ini.seekg(0, std::ios::end);
+	size_t fileSize = file_ini.tellg();
+	file_ini.seekg(0, std::ios::beg);
 
 	std::string fileData(fileSize, ' ');
-	file_ini.read(&fileData[0], fileSize); // Переносим данные из файла в строку
+	file_ini.read(&fileData[0], fileSize);
 
 	ProcessRead(fileData);
 }
@@ -88,7 +88,7 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 				else if (c == '=')
 					m_state = State::Equal;
 				else if (c == '\t') {
-					//throw Exception("Tabs are not allowed in the key! At line: " + std::to_string(line)); // если хотим что бы нельзя было делать табуляцию после ключа
+					//throw Exception("Tabs are not allowed in the key! At line: " + std::to_string(line)); // Р•СЃР»Рё С…РѕС‚РёРј С‡С‚Рѕ Р±С‹ РЅРµ Р±С‹Р»Рѕ С‚Р°Р±РѕРІ
 					continue;
 				} else if (c == '\n') {
 					throw Exception_runtime("Newlines are not allowed in the key! At line: " + std::to_string(m_line));
@@ -187,20 +187,17 @@ void INIP::Parser::create_file_config() {
 	std::ofstream file("config.ini");
 	std::cout << M_GOOD << "File created!" << std::endl;
 	std::cout << M_HIT << "Filling out the file.." << std::endl;
-	std::string options = "; База данных\n"
-		"[DB]\n"
-		"\thost = localhost\n"
-		"\tport = 5432\n"
-		"\tdbname = postgres\n"
-		"\tuser = postgres\n"
-		"\tpassword = postgres\n\n"
-		"; Сайт который нужно парсить\n"
-		"[SITE]\n"
-		"\taddress = https://<Укажите сайт>\n"
-		"\trec = 1 ; Укажите глубину парсинга\n\n"
-		"; Порт для запуска сервера\n"
-		"[SERVER]\n"
-		"\tport = 1337 ; Укажите порт для запуска сервера и программы паука\n";
+	std::string options = "[DB]\n"
+						  "\thost = localhost\n"
+						  "\tport = 5432\n"
+						  "\tdbname = postgres\n"
+						  "\tuser = postgres\n"
+						  "\tpassword = postgres\n\n"
+						  "[SITE]\n"
+						  "\taddress = https://<Р’РІРµРґРёС‚Рµ Р°РґСЂРµСЃСЃ СЃР°Р№С‚Р°>\n"
+						  "\tdepth = 1\n\n"
+						  "[SERVER]\n"
+						  "\tport = 1337\n";
 	file << options;
 	file.close();
 }

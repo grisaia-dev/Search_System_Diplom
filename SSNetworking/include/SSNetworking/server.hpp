@@ -2,15 +2,21 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-namespace SS {
-    class __declspec(dllexport) Session;
+#ifdef _WIN32
+    #define SH_LIB __declspec(dllexport)
+#else
+    #define SH_LIB
+#endif
 
-    enum class __declspec(dllexport) IPV {
+namespace SS {
+    class SH_LIB Session;
+
+    enum class SH_LIB IPV {
         V4,
         V6
     };
 
-    class __declspec(dllexport) Server {
+    class SH_LIB Server {
     public:
         Server(IPV ipv, unsigned short port);
 

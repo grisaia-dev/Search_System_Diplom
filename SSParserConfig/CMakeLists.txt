@@ -12,7 +12,7 @@ set(SOURCE_F
 	${PROJECT_SOURCE_DIR}/src/config_parser.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_F} ${HEADER_F})
+add_library(${PROJECT_NAME} STATIC ${SOURCE_F} ${HEADER_F})
 
 target_include_directories(${PROJECT_NAME}
 	PUBLIC

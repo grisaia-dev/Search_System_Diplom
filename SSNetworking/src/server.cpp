@@ -20,11 +20,9 @@ namespace SS {
     }
 
     void Server::startAccept() {
-        // Создать соединение
         auto connection = Session::create(_ioContext);
 
         _connections.push_back(connection);
-        // Асинхронно принять соединение
         _acceptor.async_accept(connection->get_socket(),
             [connection, this](const boost::system::error_code& error) {
                 if (!error) {

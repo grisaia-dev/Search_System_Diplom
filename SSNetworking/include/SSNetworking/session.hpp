@@ -3,8 +3,14 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <string>
 
+#ifdef _WIN32
+    #define SH_LIB __declspec(dllexport)
+#else
+    #define SH_LIB
+#endif
+
 namespace SS {
-    class __declspec(dllexport) Session : public std::enable_shared_from_this<Session> {
+    class SH_LIB Session : public std::enable_shared_from_this<Session> {
     public:
         void start();
 

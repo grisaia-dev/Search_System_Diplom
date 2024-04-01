@@ -3,45 +3,21 @@
 #include <iostream>
 #include <map>
 #include <string>
-//#include <sstream>
+#include <sstream>
 #include <fstream>
 #include <stdexcept>
 #include <filesystem>
 
 namespace INIP {
-	class __declspec(dllexport) Parser {
+	class Parser {
 	public:
 		Parser(const std::filesystem::path filePath);
 		~Parser();
 
 		template<typename T>
-		T get_value(const std::string& section_key, const T& defaultValue = T()); //{
-			//try {
-			//	auto it = m_sKeyValue.find(section_key);
-			//	if (it != m_sKeyValue.end()) {
-			//		T temp = defaultValue;
-			//		std::stringstream ss;
-			//		ss << m_sKeyValue.find(section_key)->second;
-			//		ss >> temp;
-			//		return temp;
-			//	} else {
-			//		throw Exception_notValid("Section and key not found!! Please use one of this:");
-			//	}
-			//} catch (const std::invalid_argument& ex) {
-			//	std::cout << M_ERROR << ex.what() << std::endl;
-			//	for (const auto& skv : m_sKeyValue)
-			//		std::cout << " ---> " << skv.first << std::endl;
-			//	m_sKeyValue.clear();
-			//	Parser::~Parser();
-			//	exit(2);
-			//}
-
-		//}
+		T get_value(const std::string& section_key, const T& defaultValue = T());
 		template<>
-		std::string get_value(const std::string& section_key, const std::string& defaultValue);// {
-		//	return m_sKeyValue.find(section_key)->second; 
-		//}
-
+		std::string get_value(const std::string& section_key, const std::string& defaultValue);
 	private:
 		enum class State {
 			ReadyForData,

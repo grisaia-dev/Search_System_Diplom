@@ -14,8 +14,8 @@ if(WIN32)
 endif()
 
 if(UNIX)
-	set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/<enter-a-path-to-include>)
-	set(Boost_LIBRARY ${PROJECT_SOURCE_DIR}/<enter-a-path-to-libs>)
+    set(Boost_INCLUDE_DIR /Users/jatex/Libraries/boost/include)
+    set(Boost_LIBRARY /Users/jatex/Libraries/boost/lib)
 endif()
 
 find_package(Boost REQUIRED)
