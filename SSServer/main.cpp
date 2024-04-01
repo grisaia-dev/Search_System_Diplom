@@ -13,6 +13,8 @@ int main(void) {
     conf.dbUser= parser.get_value<std::string>("DB.user");
     conf.dbPass= parser.get_value<std::string>("DB.password");
     conf.port = parser.get_value<unsigned short>("SERVER.port");
+    parser.~Parser();
+
 
     SS::Server server(SS::IPV::V4, conf);
     server.run();

@@ -10,6 +10,7 @@ namespace SS {
 
     int Server::run() {
         try {
+            std::cout << M_HIT << "Server started!" << std::endl;
             startAccept();
             _ioContext.run();
         } catch (const std::exception& ex) {
@@ -21,8 +22,6 @@ namespace SS {
 
     void Server::startAccept() {
         auto connection = Session::create(_ioContext);
-
-        _connections.push_back(connection);
         _acceptor.async_accept(connection->get_socket(),
             [connection, this](const boost::system::error_code& error) {
                 if (!error) {

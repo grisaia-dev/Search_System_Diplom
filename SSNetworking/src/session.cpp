@@ -3,12 +3,11 @@
 #include <SSHelp/hit.hpp>
 #include <boost/beast/http/field.hpp>
 #include <boost/beast/http/status.hpp>
-#include <boost/beast/core/error.hpp>
 #include <boost/beast/http/verb.hpp>
 #include <boost/beast/http/read.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core/error.hpp>
+#include <boost/beast/core/ostream.hpp>
 #include <iostream>
-#include <ostream>
 
 
 namespace SS {
@@ -27,7 +26,8 @@ namespace SS {
         http::async_read(_socket, _buffer, _request, 
             [self](const beast::error_code& error, size_t bytesTransferred) {
                 if (!error) {
-                    std::cout << M_ENTER << "Принято " << bytesTransferred << " байт данных" << std::endl;
+                    std::cout << M_ENTER << "Accepted " << bytesTransferred << " bytes of data" << std::endl;
+                    std::cout << self->_request.base();
                     self->parse_request();
                 } else {
                     std::cerr << M_ERROR << error.what() << std::endl;
@@ -42,12 +42,12 @@ namespace SS {
             case http::verb::get:
                 _response.result(http::status::ok);
                 _response.set(http::field::server, "Beast");
-                //response_get();
+                //response_get(); // TODO
                 break;
             case http::verb::post:
                 _response.result(http::status::ok);
                 _response.set(http::field::server, "Beast");
-                //response_post();
+                //response_post(); // TODO
                 break;
             default:
                 _response.result(http::status::bad_request);
@@ -70,7 +70,7 @@ namespace SS {
                 if (error) {
                     std::cerr << M_ERROR << error.what() << std::endl;
                 } else {
-                    std::cout << M_ENTER << "Отправленно " << bytesTransferred << " байт данных" << std::endl;
+                    std::cout << M_ENTER << "Send " << bytesTransferred << " bytes of data" << std::endl;
                     self->_socket.shutdown(tcp::socket::shutdown_send);
                 }
             });

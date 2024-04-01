@@ -35,7 +35,9 @@ namespace INIP {
 			}
 		}
 		template<>
-		std::string get_value(const std::string& section_key, const std::string& defaultValue);
+		std::string get_value(const std::string& section_key, const std::string& defaultValue) {
+			return m_sKeyValue.find(section_key)->second;
+		}
 	private:
 		enum class State {
 			ReadyForData,

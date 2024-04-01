@@ -23,11 +23,11 @@ namespace SS {
     private:
         explicit Session(boost::asio::io_context& ioContext);
     private: // Функции
-        void read_request(); // Для получения запроса
+        void read_request(); // Читаем запрос
         void parse_request(); // Парсим запрос на get или post
         //void response_get(); // ответ на запрос get
         //void response_post(); // ответ на запрос post
-        void response_write();
+        void response_write(); // Отправляем ответ
     private: // Переменные
         boost::asio::ip::tcp::socket _socket;
         boost::beast::flat_buffer _buffer{8192};

@@ -40,7 +40,5 @@ namespace SS {
 
         boost::asio::io_context _ioContext;
         boost::asio::ip::tcp::acceptor _acceptor;
-
-        std::vector<std::shared_ptr<Session>> _connections;
     };
 }
