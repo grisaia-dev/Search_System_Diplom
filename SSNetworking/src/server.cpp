@@ -5,8 +5,8 @@
 
 namespace SS {
     using boost::asio::ip::tcp;
-    Server::Server(IPV ipv, unsigned short port) : _ipVersion(ipv), _port(port),
-        _acceptor(_ioContext, tcp::endpoint(_ipVersion == IPV::V4 ? tcp::v4() : tcp::v6(), _port)) {}
+    Server::Server(IPV ipv, Config conf) : _ipVersion(ipv), _config(std::move(conf)),
+        _acceptor(_ioContext, tcp::endpoint(_ipVersion == IPV::V4 ? tcp::v4() : tcp::v6(), _config.port)) {}
 
     int Server::run() {
         try {
