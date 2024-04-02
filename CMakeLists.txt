@@ -7,11 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
 
-#set(PostgreSQL_ADDITIONAL_VERSIONS "15")
-#add_subdirectory(${PROJECT_SOURCE_DIR}/lib/libpqxx libpqxx-build)
-
 add_subdirectory(${PROJECT_SOURCE_DIR}/SSHelp)
 add_subdirectory(${PROJECT_SOURCE_DIR}/SSParserConfig)
+add_subdirectory(${PROJECT_SOURCE_DIR}/SSDataBase)
 add_subdirectory(${PROJECT_SOURCE_DIR}/SSNetworking)
 add_subdirectory(${PROJECT_SOURCE_DIR}/SSClient)
 add_subdirectory(${PROJECT_SOURCE_DIR}/SSServer)
