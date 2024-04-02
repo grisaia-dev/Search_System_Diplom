@@ -30,6 +30,7 @@ set(HEADER_F
 	${PROJECT_SOURCE_DIR}/include/SSNetworking/session.hpp
 )
 
+set(BUILD_SHARED_LIBS ON)
 if(Boost_FOUND)
 	add_library(${PROJECT_NAME} SHARED ${SOURCE_F} ${HEADER_F})
 
@@ -39,12 +40,14 @@ if(Boost_FOUND)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 			${Boost_INCLUDE_DIRS}
 		PRIVATE
+			SSDataBase
 			SSHelp
 	)
 
 	target_link_libraries(${PROJECT_NAME}
 		PRIVATE
 			${Boost_LIBRARIES}
+			SSDataBase
 			SSHelp
 	)
 endif()
