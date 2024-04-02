@@ -8,12 +8,14 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp)
 
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
+		SSHelp
 		SSParserConfig
 		SSNetworking
 )
 
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
+		SSHelp
 		SSParserConfig
 		SSNetworking
 )

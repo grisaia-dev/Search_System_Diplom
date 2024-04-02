@@ -21,12 +21,12 @@ namespace SS {
             return std::shared_ptr<Session>(new Session(ioContext));
         }
     private:
-        explicit Session(boost::asio::io_context& ioContext);
+        explicit Session(boost::asio::io_context& ioContext); // приватно создаем сессию
     private: // Функции
         void read_request(); // Читаем запрос
         void parse_request(); // Парсим запрос на get или post
-        //void response_get(); // ответ на запрос get
-        //void response_post(); // ответ на запрос post
+        void response_get(); // ответ на запрос get
+        void response_post(); // ответ на запрос post
         void response_write(); // Отправляем ответ
     private: // Переменные
         boost::asio::ip::tcp::socket _socket;

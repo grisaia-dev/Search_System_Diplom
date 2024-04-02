@@ -10,8 +10,8 @@ namespace SS {
 
     int Server::run() {
         try {
-            std::cout << M_HIT << "Server started!" << std::endl;
             startAccept();
+            std::cout << M_GOOD << "Server started!" << std::endl;
             _ioContext.run();
         } catch (const std::exception& ex) {
             std::cerr << M_ERROR << ex.what() << std::endl;

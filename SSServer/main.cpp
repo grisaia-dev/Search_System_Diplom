@@ -1,11 +1,13 @@
 #include <iostream>
-#include <SSNetworking/server.hpp>
+#include <SSHelp/hit.hpp>
 #include <SSParserConfig/config_parser.hpp>
+#include <SSNetworking/server.hpp>
 
 int main(void) {
     setlocale(LC_ALL, "ru");
-    INIP::Parser parser("config.ini");
+    std::cout << M_HIT << "Starting server.." << std::endl;
 
+    INIP::Parser parser("config.ini");
     SS::Config conf;
     conf.dbHost = parser.get_value<std::string>("DB.host");
     conf.dbPort = parser.get_value<std::string>("DB.port");
@@ -14,7 +16,6 @@ int main(void) {
     conf.dbPass= parser.get_value<std::string>("DB.password");
     conf.port = parser.get_value<unsigned short>("SERVER.port");
     parser.~Parser();
-
 
     SS::Server server(SS::IPV::V4, conf);
     server.run();
