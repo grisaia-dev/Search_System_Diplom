@@ -25,7 +25,7 @@ namespace SS {
         _acceptor.async_accept(connection->get_socket(),
             [connection, this](const boost::system::error_code& error) {
                 if (!error) {
-                    connection->start();
+                    connection->start(_config);
                 }
                 startAccept();
             });

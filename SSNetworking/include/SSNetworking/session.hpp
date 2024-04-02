@@ -1,9 +1,11 @@
 #pragma once
+#include <SSNetworking/server.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/http/dynamic_body.hpp>
+#include <boost/beast/http/message.hpp>
 #include <memory>
-#include <string>
 
 #ifdef _WIN32
     #define SH_LIB __declspec(dllexport)
@@ -14,7 +16,7 @@
 namespace SS {
     class SH_LIB Session : public std::enable_shared_from_this<Session> {
     public:
-        void start();
+        void start(const Config& conf);
 
         boost::asio::ip::tcp::socket& get_socket() { return _socket; }
         static std::shared_ptr<Session> create(boost::asio::io_context& ioContext) {
@@ -29,6 +31,7 @@ namespace SS {
         void response_post(); // ответ на запрос post
         void response_write(); // Отправляем ответ
     private: // Переменные
+        Config _config;
         boost::asio::ip::tcp::socket _socket;
         boost::beast::flat_buffer _buffer{8192};
         boost::beast::http::request<boost::beast::http::dynamic_body> _request;

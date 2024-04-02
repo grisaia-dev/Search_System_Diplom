@@ -2,6 +2,7 @@
 #include <SSHelp/hit.hpp>
 #include <SSDataBase/db.hpp>
 #include <boost/beast/http/write.hpp>
+#include <boost/beast/http/impl/write.hpp>
 #include <boost/beast/http/field.hpp>
 #include <boost/beast/http/status.hpp>
 #include <boost/beast/http/verb.hpp>
@@ -9,6 +10,7 @@
 #include <boost/beast/core/error.hpp>
 #include <boost/beast/core/ostream.hpp>
 #include <iostream>
+#include <string>
 
 
 namespace SS {
@@ -17,12 +19,8 @@ namespace SS {
     using tcp = boost::asio::ip::tcp;
     Session::Session(boost::asio::io_context& ioContext) : _socket(ioContext) {}
 
-    void Session::start() {
-        try {
-            database database1;
-        } catch (const std::exception& ex) {
-            std::cout << ex.what() << std::endl;
-        }
+    void Session::start(const Config& conf) {
+        _config = conf;
         read_request();
     }
 
@@ -70,7 +68,8 @@ namespace SS {
     void Session::response_get() {
         if (_request.target() == "/") {
             _response.set(http::field::content_type, "text/html");
-            beast::ostream(_response.body()) << "<html>\n"
+            beast::ostream(_response.body()) 
+                << "<html>\n"
 			    << "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
 			    << "<body>\n"
 			    << "<h1>Search Engine</h1>\n"
