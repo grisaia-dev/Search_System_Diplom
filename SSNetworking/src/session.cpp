@@ -89,7 +89,6 @@ namespace SS {
     }
 
     void Session::response_post() {
-        // TODO
     }
 
     void Session::response_write() {

@@ -11,7 +11,7 @@ if (WIN32)
 	#set(libpqxx_INCLUDE_DIR D:/libraries/libpqxxx/include)
 	#set(libpqxx_LIBRARY D:/libraries/libpqxxx/lib)
 elseif(UNIX)
-	set(pqxx_DIR /Users/jatex/Libraries/libspqxx)
+	set(libpqxx_DIR /Users/jatex/Libraries/libspqxx)
 	#set(pqxx_INCLUDE_DIR /Users/jatex/Libraries/libspqxx/include)
 	#set(pqxx_LIBRARY /Users/jatex/Libraries/libspqxx/lib)
 	set(PostgreSQL_ROOT /opt/homebrew/opt/postgresql@15)
@@ -36,13 +36,14 @@ if (libpqxx_FOUND)
     		$<INSTALL_INTERFACE:include>
     		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             libpqxx::pqxx
-    	PRIVATE
+		PRIVATE
     		SSHelp
     )
 
     target_link_libraries(${PROJECT_NAME}
+		PUBLIC
+			libpqxx::pqxx
     	PRIVATE
-            libpqxx::pqxx
     		SSHelp
     )
 endif()

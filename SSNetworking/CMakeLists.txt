@@ -39,8 +39,8 @@ if(Boost_FOUND)
 			$<INSTALL_INTERFACE:include>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 			${Boost_INCLUDE_DIRS}
-		PRIVATE
 			SSDataBase
+		PRIVATE
 			SSHelp
 	)
 
