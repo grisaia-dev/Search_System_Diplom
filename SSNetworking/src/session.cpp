@@ -19,7 +19,6 @@
 #include <ios>
 #include <vector>
 
-
 namespace SS {
     std::string string_to_utf_8(const std::string str) {
         std::string res;

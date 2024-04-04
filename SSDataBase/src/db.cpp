@@ -76,25 +76,25 @@ namespace SS {
         std::string query;
 
         mtx.lock();
-        query = "INSERT INTO Documents VALUES ( nextval(\"documents_id_seq\"::regclass), "
-		        "\"" + link.protocol + "\", \"" + link.host + "\", \"" + link.query + "\") RETURNING id";
-        int id_document = tx.query_value<int>(tx.esc(query));
+        query = "INSERT INTO Documents VALUES ( nextval('documents_id_seq'::regclass), "
+		        "'" + link.protocol + "', '" + link.host + "', '" + link.query + "') RETURNING id";
+        int id_document = tx.query_value<int>(query);
         int count = 0;
         int id_word = 0;
         for (const auto element : words) {
-            query = "SELECT count(id) FROM Words WHERE word=\"" + element.first + "\"";
+            query = "SELECT count(id) FROM Words WHERE word=''" + element.first + "''";
 
             if (count != 0) {
-                query = "SELECT id FROM Words WHERE word=\"" + element.first + "\"";
-                id_word = tx.query_value<int>(tx.esc(query));
+                query = "SELECT id FROM Words WHERE word=''" + element.first + "''";
+                id_word = tx.query_value<int>(query);
             } else {
-                query = "INSERT INTO Words VALUES ( nextval(\"words_id_seq\"::regclass), \"" + element.first + "\") RETURNING id";
-                id_word = tx.query_value<int>(tx.esc(query));
+                query = "INSERT INTO Words VALUES ( nextval('words_id_seq'::regclass), '" + element.first + "') RETURNING id";
+                id_word = tx.query_value<int>(query);
             }
 
             query = "INSERT INTO DocumentsWords(docLink_id, word_id, count) "
 				"VALUES (" + std::to_string(id_document) + ", " + std::to_string(id_word) + ", " + std::to_string(element.second) + ") ";
-            tx.exec(tx.esc(query));
+            tx.exec(query);
         }
         tx.commit();
         mtx.unlock();
@@ -103,11 +103,11 @@ namespace SS {
     int db::get_id_word(const std::string word) {
         pqxx::work tx(*m_connection);
 
-        std::string query = "SELECT count(id) FROM database.Words WHERE word=\"" + word + "\"";
-	    int countWord = tx.query_value<int>(tx.esc(query));
+        std::string query = "SELECT count(id) FROM database.Words WHERE word='" + word + "'";
+	    int countWord = tx.query_value<int>(query);
 	    if (countWord != 0) {
-	    	std::string query = "SELECT id FROM Words WHERE word=\"" + word + "\"";
-	    	int id_word = tx.query_value<int>(tx.esc(query));
+	    	std::string query = "SELECT id FROM Words WHERE word='" + word + "'";
+	    	int id_word = tx.query_value<int>(query);
 	    	tx.exec(query);
 	    	return id_word;
 	    } else {
@@ -120,7 +120,7 @@ namespace SS {
 	    std::map<int, int> word_count;
 
 	    for (auto [doc_id, count] : 
-            tx.query<int, int>(tx.esc("SELECT docLink_id, count FROM DocumentsWords WHERE word_id=\"" + std::to_string(id_word)+ "\""))){
+            tx.query<int, int>(tx.esc("SELECT docLink_id, count FROM DocumentsWords WHERE word_id='" + std::to_string(id_word)+ "'"))){
 		        word_count.insert({ doc_id , count });
 	        }
 	    return word_count;
@@ -130,7 +130,7 @@ namespace SS {
 	    pqxx::work tx(*m_connection);
 	    Link lk;
 	    for (std::tuple<std::string, std::string, std::string> tpl : 
-            tx.query<std::string, std::string, std::string>("SELECT protocol, hostname, query FROM Documents WHERE id = \"" + std::to_string(doc_id) + "\"")) {
+            tx.query<std::string, std::string, std::string>("SELECT protocol, hostname, query FROM Documents WHERE id = '" + std::to_string(doc_id) + "'")) {
 	    	    lk.protocol = std::get<0>(tpl);
 	    	    lk.host = std::get<1>(tpl);
 	    	    lk.query = std::get<2>(tpl);
@@ -141,7 +141,7 @@ namespace SS {
     bool db::search_link(const Link& link) {
         pqxx::work tx(*m_connection);
 	    int count = tx.query_value<int>("SELECT COUNT(*) FROM Documents "
-			"WHERE protocol=\"" + link.protocol + "\" AND hostName=\"" + link.host + "\" AND query=\"" + link.query + "\"");
+			"WHERE protocol='" + link.protocol + "' AND hostName='" + link.host + "' AND query='" + link.query + "'");
 	    if (count == 0) {
 		    return true;
 	    } else {
