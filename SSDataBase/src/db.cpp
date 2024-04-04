@@ -1,6 +1,12 @@
 #include <SSDataBase/db.hpp>
 #include <SSHelp/hit.hpp>
-#include <pqxx/transaction>
+#include <pqxx/pqxx>
+#include <iostream>
+#include <mutex>
+#include <map>
+#include <tuple>
+
+std::mutex mtx;
 
 namespace SS {
     db::db() {}
@@ -43,15 +49,15 @@ namespace SS {
     void db::create_structure() {
         if (m_connection != nullptr) {
             pqxx::work tx(*m_connection);
-            //tx.exec(tx.esc("CREATE SCHEMA IF NOT EXISTS database;"));
-            tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS Documents (id SERIAL PRIMARY KEY, "
+            tx.exec(tx.esc("CREATE SCHEMA IF NOT EXISTS database;"));
+            tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS database.Documents (id SERIAL PRIMARY KEY, "
                     "protocol VARCHAR(100) NOT NULL, "
                     "hostName VARCHAR(250) NOT NULL, "
                     "query VARCHAR(250) NOT NULL);"));
-            tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS Words (id SERIAL PRIMARY KEY, "
+            tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS database.Words (id SERIAL PRIMARY KEY, "
                     "word VARCHAR(33) NOT NULL);"));
-            tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS DocumentsWords (docLink_id integer NOT NULL REFERENCES Documents (id), "
-                    "word_id integer NOT NULL REFERENCES Words (id), "
+            tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS database.DocumentsWords (docLink_id integer NOT NULL REFERENCES database.Documents (id), "
+                    "word_id integer NOT NULL REFERENCES database.Words (id), "
                     "count integer NOT NULL);"));
 
             tx.commit();
@@ -59,24 +65,87 @@ namespace SS {
         }
     }
 
+    void db::clear_table(const std::string table) {
+        pqxx::work tx(*m_connection);
+        tx.exec(tx.esc("DELETE FROM database." + table ));
+        tx.commit();
+    }
+
     void db::insert_data(const std::map<std::string, int> &words, const Link &link) {
         pqxx::work tx(*m_connection);
-        std::string query = "INSERT INTO Documents VALUES ( nextval('documents_id_seq'::regclass), "
-		                    "'" + link.protocol + "', '" + link.host + "', '" + link.query + "') RETURNING id";
+        std::string query;
 
-        int id_document = tx.query_value<int>(query);
+        mtx.lock();
+        query = "INSERT INTO Documents VALUES ( nextval(\"documents_id_seq\"::regclass), "
+		        "\"" + link.protocol + "\", \"" + link.host + "\", \"" + link.query + "\") RETURNING id";
+        int id_document = tx.query_value<int>(tx.esc(query));
+        int count = 0;
         int id_word = 0;
         for (const auto element : words) {
-            query = "SELECT id FROM Words WHERE word='" + element.first + "'";
-            id_word = tx.query_value<int>(query);
-            if (id_word == 0) {
-			    query = "INSERT INTO Words VALUES ( nextval('words_id_seq'::regclass), '" + element.first + "') RETURNING id";
-			    id_word = tx.query_value<int>(query);
-		    }
+            query = "SELECT count(id) FROM Words WHERE word=\"" + element.first + "\"";
+
+            if (count != 0) {
+                query = "SELECT id FROM Words WHERE word=\"" + element.first + "\"";
+                id_word = tx.query_value<int>(tx.esc(query));
+            } else {
+                query = "INSERT INTO Words VALUES ( nextval(\"words_id_seq\"::regclass), \"" + element.first + "\") RETURNING id";
+                id_word = tx.query_value<int>(tx.esc(query));
+            }
+
             query = "INSERT INTO DocumentsWords(docLink_id, word_id, count) "
 				"VALUES (" + std::to_string(id_document) + ", " + std::to_string(id_word) + ", " + std::to_string(element.second) + ") ";
             tx.exec(tx.esc(query));
         }
         tx.commit();
+        mtx.unlock();
+    }
+
+    int db::get_id_word(const std::string word) {
+        pqxx::work tx(*m_connection);
+
+        std::string query = "SELECT count(id) FROM database.Words WHERE word=\"" + word + "\"";
+	    int countWord = tx.query_value<int>(tx.esc(query));
+	    if (countWord != 0) {
+	    	std::string query = "SELECT id FROM Words WHERE word=\"" + word + "\"";
+	    	int id_word = tx.query_value<int>(tx.esc(query));
+	    	tx.exec(query);
+	    	return id_word;
+	    } else {
+	    	return 0;
+	    }
+    }
+
+    std::map<int, int> db::get_word_count(const int id_word) {
+        pqxx::work tx(*m_connection);
+	    std::map<int, int> word_count;
+
+	    for (auto [doc_id, count] : 
+            tx.query<int, int>(tx.esc("SELECT docLink_id, count FROM DocumentsWords WHERE word_id=\"" + std::to_string(id_word)+ "\""))){
+		        word_count.insert({ doc_id , count });
+	        }
+	    return word_count;
+    }
+
+    Link db::get_link(const int doc_id) {
+	    pqxx::work tx(*m_connection);
+	    Link lk;
+	    for (std::tuple<std::string, std::string, std::string> tpl : 
+            tx.query<std::string, std::string, std::string>("SELECT protocol, hostname, query FROM Documents WHERE id = \"" + std::to_string(doc_id) + "\"")) {
+	    	    lk.protocol = std::get<0>(tpl);
+	    	    lk.host = std::get<1>(tpl);
+	    	    lk.query = std::get<2>(tpl);
+	    }
+	    return lk;
+    }
+
+    bool db::search_link(const Link& link) {
+        pqxx::work tx(*m_connection);
+	    int count = tx.query_value<int>("SELECT COUNT(*) FROM Documents "
+			"WHERE protocol=\"" + link.protocol + "\" AND hostName=\"" + link.host + "\" AND query=\"" + link.query + "\"");
+	    if (count == 0) {
+		    return true;
+	    } else {
+		    return false;
+	    }
     }
 }

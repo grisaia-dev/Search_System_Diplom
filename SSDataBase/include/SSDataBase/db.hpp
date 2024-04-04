@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pqxx/connection>
-#include <iostream>
 #include <string>
 
 #ifdef _WIN32
@@ -31,7 +30,16 @@ namespace SS {
         void set_connect_string(const std::string& host, const std::string& port, 
             const std::string& name, const std::string& user, const std::string& password);
         void create_structure();
+        void clear_table(const std::string table);
         void insert_data(const std::map<std::string, int>& words, const Link& link);
+        int get_id_word(const std::string word);
+        std::map<int, int> get_word_count(const int id_word);
+        Link get_link(const int doc_id);
+        bool search_link(const Link& link);
+
+        bool is_open() {
+            return m_connection != nullptr && m_connection->is_open();
+        }
 
     private: // Exception
         class Exception_notValid : public pqxx::broken_connection {

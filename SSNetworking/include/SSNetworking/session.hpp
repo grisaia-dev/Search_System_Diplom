@@ -14,6 +14,8 @@
 #endif
 
 namespace SS {
+    std::string SH_LIB string_to_utf_8(const std::string value);
+
     class SH_LIB Session : public std::enable_shared_from_this<Session> {
     public:
         void start(const Config& conf);
