@@ -168,8 +168,10 @@ void INIP::Parser::create_file_config() {
 						  "\tuser = postgres\n"
 						  "\tpassword = postgres\n\n"
 						  "[SITE]\n"
-						  "\taddress = https://<Введите адресс сайта>\n"
-						  "\tdepth = 1\n\n"
+						  "\tprotocol = https://\n"
+						  "\thost = en.wikipedia.org\n"
+						  "\tpage = /wiki/Main_Page/\n"
+						  "\tdepth = 0\n\n"
 						  "[SERVER]\n"
 						  "\tport = 1337\n";
 	file << options;
