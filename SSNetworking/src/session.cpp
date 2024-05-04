@@ -10,6 +10,7 @@
 #include <boost/beast/core/error.hpp>
 #include <boost/beast/core/ostream.hpp>
 #include <boost/beast/core/buffers_to_string.hpp>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <iterator>
 #include <map>
@@ -111,8 +112,11 @@ namespace SS {
 
     void Session::response_post() {
         db database;
-        database.set_connect_string(_config.dbHost, _config.dbPort, _config.dbName, _config.dbUser, _config.dbPass);
-        database.connect();
+        try {
+            database.set_connect_string(_config.dbHost, _config.dbPort, _config.dbName, _config.dbUser, _config.dbPass);
+            database.connect();
+        } catch (const std::exception& ex) { std::cerr << M_ERROR << ex.what() << std::endl; }
+
         if (database.is_open()) {
             if (_request.target() == "/") {
                 std::string req_data = buffers_to_string(_request.body().data());
@@ -129,6 +133,7 @@ namespace SS {
                 std::string key = req_data.substr(0, pos);
                 std::string value = req_data.substr(pos + 1);
                 value = string_to_utf_8(value);
+                boost::algorithm::to_lower(value);
 
                 if (key != "search") {
                     _response.result(http::status::not_found);
@@ -137,7 +142,7 @@ namespace SS {
 			        return;
                 }
 
-                std::regex word_reg("[\\w{3,30}]+");
+                std::regex word_reg("[\\w{2,30}]+");
                 std::sregex_iterator words_begin = std::sregex_iterator(value.begin(), value.end(), word_reg);
                 std::sregex_iterator words_end = std::sregex_iterator();
                 int n_word = std::distance(words_begin, words_end);
@@ -155,15 +160,17 @@ namespace SS {
 
                     std::map<int, int> reng;
                     std::map<int, int>::iterator it;
-                    for (int i = 0; i < n_word; ++i) {
-                        if (word_id[i] != 0) {
-					        auto documents = database.get_word_count(word_id[i]);
-					        for (auto doc : documents) {
-						        it = reng.find(doc.first);
-						        if (it != reng.end()) { reng[doc.first] += doc.second; }
-						        else { reng[doc.first] = doc.second; }
-					        }
-				        }  
+                    if (word_id.size() != 0) {
+                       for (int i = 0; i < n_word; ++i) {
+                           if (word_id[i] != 0) {
+					            auto documents = database.get_word_count(word_id[i]);
+					            for (auto doc : documents) {
+						         it = reng.find(doc.first);
+						         if (it != reng.end()) { reng[doc.first] += doc.second; }
+						         else { reng[doc.first] = doc.second; }
+					            }
+				            }     
+                       }
                     }
                     if (reng.size() != 0) {
 				        std::multimap<int, int> revers_map;

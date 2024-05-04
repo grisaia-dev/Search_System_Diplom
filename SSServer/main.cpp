@@ -3,7 +3,7 @@
 #include <SSParserConfig/config_parser.hpp>
 #include <SSNetworking/server.hpp>
 
-int main(void) {
+int main() {
     setlocale(LC_ALL, "ru");
     std::cout << M_HIT << "Starting server.." << std::endl;
 
@@ -22,4 +22,3 @@ int main(void) {
 
     return EXIT_SUCCESS;
 }
-

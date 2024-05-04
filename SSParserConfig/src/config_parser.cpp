@@ -25,9 +25,7 @@ INIP::Parser::Parser(const std::filesystem::path filePath) {
 	ProcessRead(fileData);
 }
 
-INIP::Parser::~Parser() {
-	file_ini.close();
-}
+INIP::Parser::~Parser() { file_ini.close(); }
 
 void INIP::Parser::ProcessRead(const std::string_view& str) {
 	std::cout << M_HIT << "Reading a configuration file.." << std::endl;
@@ -137,7 +135,6 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 		std::cout << M_GOOD << "Reading complete!" << std::endl;
 	} catch (const std::runtime_error& ex) {
 		std::cout << M_ERROR << ex.what() << std::endl;
-		Parser::~Parser();
 		exit(1);
 	}
 } // end function

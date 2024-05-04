@@ -39,7 +39,7 @@ std::map<std::string, int> get_words_and_index(const std::string text);
 std::vector<std::string> get_html_link(const std::string html);
 void parse_link(SS::Link link, int depth);
 
-int main(void) {
+int main() {
 	setlocale(LC_ALL, "ru");
     SS::Config conf;
     INIP::Parser parser("config.ini");
@@ -217,8 +217,6 @@ std::string remove_html_tags(const std::string s) {
 
 	boost::algorithm::to_lower(str);
 
-	//std::cout << str << std::endl;
-
 	return str;
 }
 
@@ -278,14 +276,13 @@ void parse_link(SS::Link link, int depth) {
 			std::cout << M_ENTER << "Link parsed: " << link.protocol << link.host << link.query << std::endl;
         } else { std::cout << M_HIT << "Link already in database: " << link.protocol << link.host << link.query << std::endl; }
 
-        // TODO: Collect more links from HTML code and add them to the parser like that:
         std::vector<SS::Link> links;
 
         std::vector<std::string> linkStr = get_html_link(html);
         for (int i = 0; i < linkStr.size(); ++i ) {
 			SS::Link tmp;
 			// (http[s]?:\/\/)?(\\w{3}\\.)?(\\w+[\\.\\w+]+)?([/\\\S+]+:?\\w+[\\.\\w+]?(php)?)*(\\?\\S+)?
-			std::regex ex("(http[s]?:)*(\\/\\/)?(\\w{3}\\.)?(\\w+[\\.\\w+]+)?([\\/\\S+]*)*", std::regex_constants::ECMAScript);
+			std::regex ex("(http[s]?:)*(\\/\\/)?(\\w{3}\\.)?(\\w+[\\.\\w+]+)?([\\/\\w+.?:?=?&?;]*)*(#\\w+)?", std::regex_constants::ECMAScript);
 			std::cmatch what;
 			if (std::regex_search(linkStr[i].c_str(), what, ex)) {
 				if (what[1].matched) {
