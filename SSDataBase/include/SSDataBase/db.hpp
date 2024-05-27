@@ -27,7 +27,7 @@ namespace SS {
         ~db();
 
         void connect();
-        void set_connect_string(const std::string& host, const std::string& port, 
+        void set_connect_string(const std::string& host, const std::string& port,
             const std::string& name, const std::string& user, const std::string& password);
         void create_structure();
         void clear_table(const std::string table);
@@ -41,7 +41,7 @@ namespace SS {
             return m_connection != nullptr && m_connection->is_open();
         }
 
-    private: // Exception
+    protected: // Exception
         class Exception_notValid : public pqxx::broken_connection {
     	public:
     		using pqxx::broken_connection::broken_connection;

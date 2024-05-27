@@ -50,7 +50,7 @@ namespace SS {
     void Session::read_request() {
         auto self = shared_from_this();
 
-        http::async_read(_socket, _buffer, _request, 
+        http::async_read(_socket, _buffer, _request,
             [self](const beast::error_code& error, size_t bytesTransferred) {
                 if (!error) {
                     std::cout << M_ENTER << "Accepted " << bytesTransferred << " bytes of data" << std::endl;
@@ -83,7 +83,7 @@ namespace SS {
 			        << "Invalid request-method '"
 			        << std::string(_request.method_string()) << "'";
                 break;
-        
+
         }
         response_write();
     }
@@ -91,7 +91,7 @@ namespace SS {
     void Session::response_get() {
         if (_request.target() == "/") {
             _response.set(http::field::content_type, "text/html");
-            beast::ostream(_response.body()) 
+            beast::ostream(_response.body())
                 << "<html>\n"
 			    << "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
 			    << "<body>\n"
@@ -169,7 +169,7 @@ namespace SS {
 						         if (it != reng.end()) { reng[doc.first] += doc.second; }
 						         else { reng[doc.first] = doc.second; }
 					            }
-				            }     
+				            }
                        }
                     }
                     if (reng.size() != 0) {
@@ -228,15 +228,25 @@ namespace SS {
         auto self = shared_from_this();
 
         _response.content_length(_response.body().size());
-        http::async_write(_socket, _response, 
-            [self](const beast::error_code& error, size_t bytesTransferred){
+        http::async_write(_socket, _response,
+            [self](beast::error_code error, size_t bytesTransferred){
                 if (error) {
                     std::cerr << M_ERROR << error.what() << std::endl;
                 } else {
                     std::cout << M_ENTER << "Send " << bytesTransferred << " bytes of data" << std::endl;
                     std::cout << self->_response.base();
-                    self->_socket.shutdown(tcp::socket::shutdown_send);
+                    self->_socket.shutdown(tcp::socket::shutdown_send, error);
+                    self->_deadline.cancel();
                 }
             });
     }
+
+    void Session::check_deadline() {
+        auto self = shared_from_this();
+        _deadline.async_wait(
+            [self](beast::error_code ec)
+            {
+                if (!ec) { self->_socket.close(ec); }
+            });
+        }
 }

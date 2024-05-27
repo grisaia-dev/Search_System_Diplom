@@ -8,7 +8,17 @@ set(HEADER_F
 	${PROJECT_SOURCE_DIR}/include/spider.hpp
 )
 
-#find_package(Boost REQUIRED)
+if(WIN32)
+	set(Boost_INCLUDE_DIR D:/libraries/Boost/include/boost-1_84)
+	set(Boost_LIBRARY D:/libraries/Boost/lib)
+endif()
+
+if(UNIX)
+    set(Boost_INCLUDE_DIR /Users/jatex/Libraries/boost/include)
+    set(Boost_LIBRARY /Users/jatex/Libraries/boost/lib)
+endif()
+
+find_package(Boost REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 if (OpenSSL_FOUND)
@@ -20,6 +30,7 @@ if (OpenSSL_FOUND)
 			SSDatabase
 			SSParserConfig
 			SSNetworking
+			${Boost_INCLUDE_DIRS}
 	)
 
 	target_link_libraries(${PROJECT_NAME}
@@ -29,5 +40,6 @@ if (OpenSSL_FOUND)
 			SSDataBase
 			SSParserConfig
 			SSNetworking
+			${Boost_LIBRARIES}
 	)
 endif()

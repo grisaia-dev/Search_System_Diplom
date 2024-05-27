@@ -13,11 +13,11 @@ namespace SS {
     db::~db() {
         if (m_connection != nullptr) {
             if (m_connection->is_open()) {
-                m_connection->close(); 
+                m_connection->close();
                 std::cout << M_HIT << "Disconnecting from the database!" << std::endl;
             }
             delete m_connection;
-        } 
+        }
     }
 
     void db::connect() {
@@ -37,10 +37,10 @@ namespace SS {
         }
     }
 
-    void db::set_connect_string(const std::string& host, const std::string& port, 
+    void db::set_connect_string(const std::string& host, const std::string& port,
         const std::string& name, const std::string& user, const std::string& password) {
         s_connection = "host=" + host + " " +
-                       "port=" + port + " " + 
+                       "port=" + port + " " +
                        "dbname=" + name + " " +
                        "user=" + user + " " +
                        "password=" + password;
@@ -77,7 +77,7 @@ namespace SS {
 
         std::lock_guard<std::mutex> lock(mtx);
         query = "INSERT INTO database.Documents VALUES ( nextval('database.documents_id_seq'::regclass), '"
-		        + tx.esc((link.protocol)) + "', '" + tx.esc(link.host) + "', '" + tx.esc(link.query) + "') RETURNING id";
+		        + tx.esc(link.protocol) + "', '" + tx.esc(link.host) + "', '" + tx.esc(link.query) + "') RETURNING id";
         int id_document = tx.query_value<int>(query);
         int count = 0;
         int id_word = 0;
@@ -120,7 +120,7 @@ namespace SS {
         pqxx::work tx(*m_connection);
 	    std::map<int, int> word_count;
 
-	    for (auto [doc_id, count] : 
+	    for (auto [doc_id, count] :
             tx.query<int, int>(tx.esc("SELECT docLink_id, count FROM database.DocumentsWords WHERE word_id=" + tx.esc(std::to_string(id_word))))){
 		        word_count.insert({ doc_id , count });
 	        }
@@ -130,7 +130,7 @@ namespace SS {
     Link db::get_link(const int doc_id) {
 	    pqxx::work tx(*m_connection);
 	    Link lk;
-	    for (std::tuple<std::string, std::string, std::string> tpl : 
+	    for (std::tuple<std::string, std::string, std::string> tpl :
             tx.query<std::string, std::string, std::string>("SELECT protocol, hostname, query FROM database.Documents WHERE id = " + tx.esc(std::to_string(doc_id)))) {
 	    	    lk.protocol = std::get<0>(tpl);
 	    	    lk.host = std::get<1>(tpl);

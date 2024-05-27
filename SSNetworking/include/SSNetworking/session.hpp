@@ -32,11 +32,13 @@ namespace SS {
         void response_get(); // ответ на запрос get
         void response_post(); // ответ на запрос post
         void response_write(); // Отправляем ответ
+        void check_deadline();
     private: // Переменные
         Config _config;
         boost::asio::ip::tcp::socket _socket;
         boost::beast::flat_buffer _buffer{8192};
         boost::beast::http::request<boost::beast::http::dynamic_body> _request;
         boost::beast::http::response<boost::beast::http::dynamic_body> _response;
+        boost::asio::steady_timer _deadline{_socket.get_executor(), std::chrono::seconds(60)};
     };
 }
