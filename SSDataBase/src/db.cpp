@@ -30,7 +30,7 @@ namespace SS {
                 if (m_connection->is_open())
                     std::cout << M_GOOD << "Connection completed!" << std::endl;
             } else {
-                throw Exception_notValid("It is impossible to connect to the database, check that the connection data is correct! Or service pg_ctl!");
+                throw Exception_notValid("It is impossible to connect to the database, check that the connection data is correct! Or service pg_ctl starting!");
             }
         } catch (const Exception_notValid::broken_connection& ex) {
             std::cout << M_ERROR << ex.what() << std::endl;
@@ -48,6 +48,7 @@ namespace SS {
 
     void db::create_structure() {
         if (m_connection != nullptr) {
+            std::cout << M_HIT << "Creating structure.." << "\n";
             pqxx::work tx(*m_connection);
             tx.exec(tx.esc("CREATE SCHEMA IF NOT EXISTS database;"));
             tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS database.Documents (id SERIAL PRIMARY KEY, "
@@ -61,7 +62,17 @@ namespace SS {
                     "count integer NOT NULL);"));
 
             tx.commit();
-            std::cout << M_GOOD << "The structure of database created!" << std::endl;
+            std::cout << M_GOOD << "The structure of database created!" << "\n";
+        }
+    }
+
+    void db::delete_structure() {
+        if (m_connection != nullptr) {
+            std::cout << M_HIT << "Deleting structure.." << "\n";
+            pqxx::work tx(*m_connection);
+            tx.exec(tx.esc("DROP SCHEMA IF EXISTS database CASCADE;"));
+            tx.commit();
+            std::cout << M_GOOD << "Deletion structure completed!" << "\n";
         }
     }
 
@@ -74,18 +85,19 @@ namespace SS {
     void db::insert_data(const std::map<std::string, int> &words, const Link &link) {
         pqxx::work tx(*m_connection);
         std::string query;
-
         std::lock_guard<std::mutex> lock(mtx);
+
+        // upload data about link
         query = "INSERT INTO database.Documents VALUES ( nextval('database.documents_id_seq'::regclass), '"
 		        + tx.esc(link.protocol) + "', '" + tx.esc(link.host) + "', '" + tx.esc(link.query) + "') RETURNING id";
         int id_document = tx.query_value<int>(query);
         int count = 0;
         int id_word = 0;
+
+        // Checking words in array (map), if word don't found in database upload him, else get id of word and connect him with link and upload
         for (const auto element : words) {
             query = "SELECT count(id) FROM database.Words WHERE word='" + tx.esc(element.first) + "'";
-            int words_count = tx.query_value<int>(query);
-
-            if (words_count == 0) {
+            count = tx.query_value<int>(query);
                 if (count != 0) {
                     query = "SELECT id FROM database.Words WHERE word='" + tx.esc(element.first) + "'";
                     id_word = tx.query_value<int>(query);
@@ -96,7 +108,6 @@ namespace SS {
                 query = "INSERT INTO database.DocumentsWords(docLink_id, word_id, count) "
 				    "VALUES (" + tx.esc(std::to_string(id_document)) + ", " + tx.esc(std::to_string(id_word)) + ", " + tx.esc(std::to_string(element.second)) + ") ";
                 tx.exec(query);
-            } else {}
         }
         tx.commit();
     }
@@ -110,6 +121,7 @@ namespace SS {
 	    	query = "SELECT id FROM database.Words WHERE word='" + tx.esc(word) + "'";
 	    	int id_word = tx.query_value<int>(query);
 	    	tx.exec(query);
+			tx.commit(); //-----------
 	    	return id_word;
 	    } else {
 	    	return 0;
@@ -123,7 +135,7 @@ namespace SS {
 	    for (auto [doc_id, count] :
             tx.query<int, int>(tx.esc("SELECT docLink_id, count FROM database.DocumentsWords WHERE word_id=" + tx.esc(std::to_string(id_word))))){
 		        word_count.insert({ doc_id , count });
-	        }
+            }
 	    return word_count;
     }
 

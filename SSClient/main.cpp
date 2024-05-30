@@ -81,8 +81,7 @@ std::string get_html_body(const SS::Link& link) {
         }
         io_context.stop();
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << ex.what() << "\n";
-        result = "\0";
+        std::cout << M_ERROR << "=[GET LINK]: " << ex.what() << "\n";
     }
     return result;
 }
@@ -188,7 +187,7 @@ void parse_link(const SS::Link& link, int depth) {
         std::vector<SS::Link> links;
 
         // if body is empty throw error
-        if (body.empty()) { throw std::invalid_argument("Can't get html content: " + link.protocol+link.host+link.query); }
+        if (body.empty()) { throw std::invalid_argument("Can't connect to link (maybe link is wrong): " + link.protocol+link.host+link.query); }
 
         // check depth for parsing
         if (depth > 0) {
@@ -199,7 +198,6 @@ void parse_link(const SS::Link& link, int depth) {
             for (auto& subLink : links) {
 				if (database.search_link(subLink)) {
 					tasks.push([subLink, depth]() { parse_link(subLink, depth - 1); });
-					//std::cout << subLink.host << subLink.query << "\n";
 				}
 			}
 			cv.notify_one();
@@ -214,7 +212,7 @@ void parse_link(const SS::Link& link, int depth) {
         } else { std::cout << M_HIT << "Linnk already in datadase: " << link.protocol << link.host << link.query << "\n"; }
 
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << ex.what() << "\n";
+        std::cout << M_ERROR << "[PARSE]:" << ex.what() << "\n";
     }
 }
 
@@ -252,6 +250,7 @@ int main() {
         // Connecting to databas
         database.set_connect_string(conf.dbHost, conf.dbPort, conf.dbName, conf.dbUser, conf.dbPass);
         database.connect();
+        database.delete_structure();
         database.create_structure();
 
         std::cout << M_HIT << "Starting parse link..\n";

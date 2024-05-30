@@ -36,6 +36,7 @@ namespace SS {
         std::map<int, int> get_word_count(const int id_word);
         Link get_link(const int doc_id);
         bool search_link(const Link& link);
+        void delete_structure();
 
         bool is_open() {
             return m_connection != nullptr && m_connection->is_open();
