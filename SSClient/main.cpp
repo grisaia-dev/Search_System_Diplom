@@ -25,8 +25,6 @@ namespace beast = boost::beast;
 namespace http = boost::beast::http;
 using boost::asio::ip::tcp;
 
-// Creating pool connections
-//SS::db database;
 std::mutex mtx;
 std::condition_variable cv;
 std::queue<std::function<void()>> tasks;
@@ -192,7 +190,7 @@ void parse_link(const SS::Link& link, int depth, const SS::Config& conf) {
         std::vector<SS::Link> links;
 
         // if body is empty throw error
-        if (body.empty()) { throw std::invalid_argument("[HTML]:Can't connect to link (maybe link is wrong): " + link.protocol+link.host+link.query); }
+        if (body.empty()) { throw std::invalid_argument("[SPIDER]:Can't connect to link (maybe link is wrong): " + link.protocol+link.host+link.query); }
 
         // check depth for parsing
         if (depth > 0) {
@@ -213,8 +211,8 @@ void parse_link(const SS::Link& link, int depth, const SS::Config& conf) {
 
         if (database.search_link(link)) {
             database.insert_data(words, link);
-            std::cout << M_ENTER << "Link parsed: " << link.protocol << link.host << link.query << "\n";
-        } else { std::cout << M_HIT << "Linnk already in datadase: " << link.protocol << link.host << link.query << "\n"; }
+            std::cout << M_ENTER << "[SPIDER]:Link parsed: " << link.protocol << link.host << link.query << "\n";
+        } else { std::cout << M_HIT << "[SPIDER]:Linnk already in datadase: " << link.protocol << link.host << link.query << "\n"; }
 
     } catch (const std::exception& ex) {
         std::cout << M_ERROR << ex.what() << "\n";
@@ -259,7 +257,7 @@ int main() {
         database.delete_structure();
         database.create_structure();
 
-        std::cout << M_HIT << "Starting parse link..\n";
+        std::cout << M_HIT << "[SPIDER]:Starting parse link..\n";
 
         int num_threads = std::thread::hardware_concurrency();
         std::vector<std::thread> thread_pool;
@@ -280,7 +278,7 @@ int main() {
 
         for (auto& t : thread_pool) { t.join(); }
 
-        std::cout << M_GOOD << "Parsing completed!\n";
+        std::cout << M_GOOD << "[SPIDER]:Parsing completed!\n";
     } catch (const std::exception& ex) {
         std::cout << M_ERROR << ex.what() << "\n";
     }
