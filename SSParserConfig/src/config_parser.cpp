@@ -3,14 +3,14 @@
 
 INIP::Parser::Parser(const std::filesystem::path filePath) {
 	file_ini.open(filePath, std::ios::binary | std::ios::in);
-	std::string forEx = "File " + filePath.string() + " not found!";
+	std::string forEx = "[CONFIG_PARSER]:File " + filePath.string() + " not found!";
 
 	try {
 		if (!file_ini.is_open())
 			throw Exception_runtime(forEx);
 	} catch (const std::runtime_error& ex) {
 		std::cout << M_ERROR << ex.what() << std::endl;
-		std::cout << M_HIT << "Creating config file.." << std::endl;
+		std::cout << M_HIT << "[CONFIG_PARSER]:Creating config file.." << std::endl;
 		create_file_config();
 		file_ini.open(filePath, std::ios::binary | std::ios::in);
 	}
@@ -28,7 +28,7 @@ INIP::Parser::Parser(const std::filesystem::path filePath) {
 INIP::Parser::~Parser() { file_ini.close(); }
 
 void INIP::Parser::ProcessRead(const std::string_view& str) {
-	std::cout << M_HIT << "Reading a configuration file.." << std::endl;
+	std::cout << M_HIT << "[CONFIG_PARSER]:Reading a configuration file.." << std::endl;
 	try {
 		Reset();
 		for (char c : str) {
@@ -74,9 +74,9 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 				if (c == ']') {
 					m_state = State::ReadyForData;
 				} else if (c == '\t')
-					throw Exception_runtime("Tabs are not allowed in section name! At line: " + std::to_string(m_line));
+					throw Exception_runtime("[CONFIG_PARSER]:Tabs are not allowed in section name! At line: " + std::to_string(m_line));
 				else if (c == '\n')
-					throw Exception_runtime("Newlines are not allowed in section name! At line: " + std::to_string(m_line));
+					throw Exception_runtime("[CONFIG_PARSER]:Newlines are not allowed in section name! At line: " + std::to_string(m_line));
 				else
 					m_currentSection += c;
 				break;
@@ -89,7 +89,7 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 					//throw Exception("Tabs are not allowed in the key! At line: " + std::to_string(line)); // Если хотим что бы не было табов
 					continue;
 				} else if (c == '\n') {
-					throw Exception_runtime("Newlines are not allowed in the key! At line: " + std::to_string(m_line));
+					throw Exception_runtime("[CONFIG_PARSER]:Newlines are not allowed in the key! At line: " + std::to_string(m_line));
 				} else
 					m_currentKey += c;
 				break;
@@ -99,11 +99,11 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 				else if (c == '\t')
 					continue;
 				else if (c == '\n')
-					throw Exception_runtime("not found '='! At line: " + std::to_string(m_line));
+					throw Exception_runtime("[CONFIG_PARSER]:not found '='! At line: " + std::to_string(m_line));
 				else if (c == '=')
 					m_state = State::Equal;
 				else
-					throw Exception_runtime("Keys are not allowed to have spaces in them! At line: " + std::to_string(m_line));
+					throw Exception_runtime("[CONFIG_PARSER]:Keys are not allowed to have spaces in them! At line: " + std::to_string(m_line));
 				break;
 			case State::Equal:
 				if (c == ' ')
@@ -111,7 +111,7 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 				else if (c == '\t')
 					continue;
 				else if (c == '\n')
-					throw Exception_runtime("Value can't be empty! At line: " + std::to_string(m_line));
+					throw Exception_runtime("[CONFIG_PARSER]:Value can't be empty! At line: " + std::to_string(m_line));
 				else {
 					m_currentValue.clear();
 					m_currentValue += c;
@@ -132,7 +132,7 @@ void INIP::Parser::ProcessRead(const std::string_view& str) {
 				break;
 			} // end switch (m_state)
 		} // end for
-		std::cout << M_GOOD << "Reading complete!" << std::endl;
+		std::cout << M_GOOD << "[CONFIG_PARSER]:Reading complete!" << std::endl;
 	} catch (const std::runtime_error& ex) {
 		std::cout << M_ERROR << ex.what() << std::endl;
 		exit(1);
@@ -156,8 +156,8 @@ void INIP::Parser::Pair(const std::string& section, const std::string& key, cons
 
 void INIP::Parser::create_file_config() {
 	std::ofstream file("config.ini");
-	std::cout << M_GOOD << "File created!" << std::endl;
-	std::cout << M_HIT << "Filling out the file.." << std::endl;
+	std::cout << M_GOOD << "[CONFIG_PARSER]:File created!" << std::endl;
+	std::cout << M_HIT << "[CONFIG_PARSER]:Filling out the file.." << std::endl;
 	std::string options = "[DB]\n"
 						  "\thost = localhost\n"
 						  "\tport = 5432\n"

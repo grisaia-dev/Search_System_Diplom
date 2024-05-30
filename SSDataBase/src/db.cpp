@@ -14,23 +14,23 @@ namespace SS {
         if (m_connection != nullptr) {
             if (m_connection->is_open()) {
                 m_connection->close();
-                std::cout << M_HIT << "Disconnecting from the database!" << std::endl;
+                //std::cout << M_HIT << "Disconnecting from the database!" << std::endl;
             }
             delete m_connection;
         }
     }
 
     void db::connect() {
-        std::cout << M_HIT << "Connecting to data base..." << std::endl;
+        //std::cout << M_HIT << "Connecting to data base..." << std::endl;
         try {
             try {
                 m_connection = new pqxx::connection(s_connection.c_str());
             } catch (const pqxx::broken_connection) {}
             if (m_connection != nullptr) {
                 if (m_connection->is_open())
-                    std::cout << M_GOOD << "Connection completed!" << std::endl;
+                    std::cout << M_GOOD << "[DB]:Connection completed!" << std::endl;
             } else {
-                throw Exception_notValid("It is impossible to connect to the database, check that the connection data is correct! Or service pg_ctl starting!");
+                throw Exception_notValid("[DB]:It is impossible to connect to the database, check that the connection data is correct! Or service pg_ctl starting!");
             }
         } catch (const Exception_notValid::broken_connection& ex) {
             std::cout << M_ERROR << ex.what() << std::endl;
@@ -48,7 +48,7 @@ namespace SS {
 
     void db::create_structure() {
         if (m_connection != nullptr) {
-            std::cout << M_HIT << "Creating structure.." << "\n";
+            std::cout << M_HIT << "[DB]:Creating structure.." << "\n";
             pqxx::work tx(*m_connection);
             tx.exec(tx.esc("CREATE SCHEMA IF NOT EXISTS database;"));
             tx.exec(tx.esc("CREATE TABLE IF NOT EXISTS database.Documents (id SERIAL PRIMARY KEY, "
@@ -62,17 +62,17 @@ namespace SS {
                     "count integer NOT NULL);"));
 
             tx.commit();
-            std::cout << M_GOOD << "The structure of database created!" << "\n";
+            std::cout << M_GOOD << "[DB]:The structure of database created!" << "\n";
         }
     }
 
     void db::delete_structure() {
         if (m_connection != nullptr) {
-            std::cout << M_HIT << "Deleting structure.." << "\n";
+            std::cout << M_HIT << "[DB]:Deleting structure.." << "\n";
             pqxx::work tx(*m_connection);
             tx.exec(tx.esc("DROP SCHEMA IF EXISTS database CASCADE;"));
             tx.commit();
-            std::cout << M_GOOD << "Deletion structure completed!" << "\n";
+            std::cout << M_GOOD << "[DB]:Deletion structure completed!" << "\n";
         }
     }
 
@@ -120,8 +120,8 @@ namespace SS {
 	    if (countWord != 0) {
 	    	query = "SELECT id FROM database.Words WHERE word='" + tx.esc(word) + "'";
 	    	int id_word = tx.query_value<int>(query);
-	    	tx.exec(query);
-			tx.commit(); //-----------
+	    	//tx.exec(query);
+			//tx.commit(); //-----------
 	    	return id_word;
 	    } else {
 	    	return 0;

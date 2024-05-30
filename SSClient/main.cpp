@@ -25,7 +25,8 @@ namespace beast = boost::beast;
 namespace http = boost::beast::http;
 using boost::asio::ip::tcp;
 
-SS::db database;
+// Creating pool connections
+//SS::db database;
 std::mutex mtx;
 std::condition_variable cv;
 std::queue<std::function<void()>> tasks;
@@ -81,7 +82,7 @@ std::string get_html_body(const SS::Link& link) {
         }
         io_context.stop();
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << "=[GET LINK]: " << ex.what() << "\n";
+        std::cout << M_ERROR << ex.what() << "\n";
     }
     return result;
 }
@@ -179,15 +180,19 @@ std::vector<SS::Link> get_links(const std::string& body) {
 	return std::move(links);
 }
 
-void parse_link(const SS::Link& link, int depth) {
+void parse_link(const SS::Link& link, int depth, const SS::Config& conf) {
     try {
+        SS::db database;
+        database.set_connect_string(conf.dbHost, conf.dbPort, conf.dbName, conf.dbUser, conf.dbPass);
+        database.connect();
+
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         // Getting html body
         std::string body = get_html_body(link);
         std::vector<SS::Link> links;
 
         // if body is empty throw error
-        if (body.empty()) { throw std::invalid_argument("Can't connect to link (maybe link is wrong): " + link.protocol+link.host+link.query); }
+        if (body.empty()) { throw std::invalid_argument("[HTML]:Can't connect to link (maybe link is wrong): " + link.protocol+link.host+link.query); }
 
         // check depth for parsing
         if (depth > 0) {
@@ -197,7 +202,7 @@ void parse_link(const SS::Link& link, int depth) {
             size_t index = 0;
             for (auto& subLink : links) {
 				if (database.search_link(subLink)) {
-					tasks.push([subLink, depth]() { parse_link(subLink, depth - 1); });
+					tasks.push([subLink, depth, conf]() { parse_link(subLink, depth - 1, conf); });
 				}
 			}
 			cv.notify_one();
@@ -212,7 +217,7 @@ void parse_link(const SS::Link& link, int depth) {
         } else { std::cout << M_HIT << "Linnk already in datadase: " << link.protocol << link.host << link.query << "\n"; }
 
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << "[PARSE]:" << ex.what() << "\n";
+        std::cout << M_ERROR << ex.what() << "\n";
     }
 }
 
@@ -232,6 +237,7 @@ void thread_pool_worker() {
 
 int main() {
     try {
+        SS::db database;
         SS::Config conf;
         INIP::Parser parser("config.ini");
 
@@ -262,7 +268,7 @@ int main() {
 
         {
             std::lock_guard<std::mutex> lock(mtx);
-            tasks.push([link, conf]() { parse_link(link, conf.depth - 1); });
+            tasks.push([link, conf]() { parse_link(link, conf.depth - 1, conf); });
             cv.notify_one();
         }
         std::this_thread::sleep_for(std::chrono::seconds(2));

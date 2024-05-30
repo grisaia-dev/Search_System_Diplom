@@ -53,7 +53,7 @@ namespace SS {
         http::async_read(_socket, _buffer, _request,
             [self](const beast::error_code& error, size_t bytesTransferred) {
                 if (!error) {
-                    std::cout << M_ENTER << "Accepted " << bytesTransferred << " bytes of data" << std::endl;
+                    std::cout << M_ENTER << "[SERVER]:Accepted " << bytesTransferred << " bytes of data" << std::endl;
                     std::cout << self->_request.base();
                     self->parse_request();
                 } else {
@@ -120,7 +120,7 @@ namespace SS {
         if (database.is_open()) {
             if (_request.target() == "/") {
                 std::string req_data = buffers_to_string(_request.body().data());
-                std::cout << M_ENTER << "Post query: " << req_data << std::endl;
+                std::cout << M_ENTER << "[SERVER]:Post query: " << req_data << std::endl;
 
                 size_t pos = req_data.find('=');
                 if (pos == std::string::npos) {
@@ -233,7 +233,7 @@ namespace SS {
                 if (error) {
                     std::cerr << M_ERROR << error.what() << std::endl;
                 } else {
-                    std::cout << M_ENTER << "Send " << bytesTransferred << " bytes of data" << std::endl;
+                    std::cout << M_ENTER << "[SERVER]:Send " << bytesTransferred << " bytes of data" << std::endl;
                     std::cout << self->_response.base();
                     self->_socket.shutdown(tcp::socket::shutdown_send, error);
                     self->_deadline.cancel();
