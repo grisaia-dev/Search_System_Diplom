@@ -168,7 +168,7 @@ void INIP::Parser::create_file_config() {
 						  "\tprotocol = https://\n"
 						  "\thost = en.wikipedia.org\n"
 						  "\tpage = /wiki/Main_Page/\n"
-						  "\tdepth = 0\n\n"
+						  "\tdepth = 2\n\n"
 						  "[SERVER]\n"
 						  "\tport = 1337\n";
 	file << options;

@@ -31,7 +31,7 @@ std::queue<std::function<void()>> tasks;
 bool exit_thread_pool = false;
 
 std::string get_html_body(const SS::Link& link) {
-    std::string result;
+    std::string result = "";
     try {
         asio::io_context io_context;
         if (link.protocol == "https://") {
@@ -80,7 +80,8 @@ std::string get_html_body(const SS::Link& link) {
         }
         io_context.stop();
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << ex.what() << "\n";
+        std::cerr << M_ERROR << ex.what() << "\n";
+        result = "";
     }
     return result;
 }
@@ -152,7 +153,7 @@ std::map<std::string, int> get_words_and_index(const std::string& body) {
 	return indexWords;
 }
 
-std::vector<SS::Link> get_links(const std::string& body) {
+std::vector<SS::Link> get_links(const std::string& body, const SS::Link& link) {
     std::vector<SS::Link> links;
     SS::Link temp;
     std::regex link_regex("<a href=\"(.*?)\"");
@@ -161,19 +162,28 @@ std::vector<SS::Link> get_links(const std::string& body) {
 	auto link_end = std::sregex_iterator();
 
 	for (std::sregex_iterator i = link_begin; i != link_end; ++i) {
-		std::string sTemp;
+	    std::string sTemp;
 		std::smatch match = *i;
-			if (match[1].matched) {
-			    sTemp = std::string(match[1].first, match[1].second);
-				std::regex ex("https?://([^/]*)?(/.*)", std::regex_constants::ECMAScript);
-				std::cmatch what;
-				if (std::regex_search(sTemp.c_str(), what, ex)) {
-					temp.protocol = "https://";
-					if (what[1].matched) { temp.host = std::string(what[1].first, what[1].second); }
-					if (what[2].matched) { temp.query = std::string(what[2].first, what[2].second); }
-					links.push_back(temp);
+		if (match[1].matched) {
+		    sTemp = std::string(match[1].first, match[1].second);
+			/*
+			 * (http[s]?://)*(//)*([^/]*)?([/]?.*) - https://what.ever.org/all,  /all/what, //what.ever.org/all/what
+		    */
+			std::regex ex("(http[s]?://)*(//)*([^/]*)?([/]?.*)", std::regex_constants::ECMAScript);
+			std::cmatch what;
+			if (std::regex_search(sTemp.c_str(), what, ex)) {
+				temp.protocol = "https://";
+				if (what[3].matched) {
+				    temp.host = std::string(what[3].first, what[3].second);
+				    if (temp.host == "") { temp.host = link.host; }
 				}
+				if (what[4].matched) {
+				    temp.query = std::string(what[4].first, what[4].second);
+					if (temp.query == "/wiki/") { temp.query = link.query; }
+				}
+				links.push_back(temp);
 			}
+		}
 	}
 	return std::move(links);
 }
@@ -194,7 +204,7 @@ void parse_link(const SS::Link& link, int depth, const SS::Config& conf) {
 
         // check depth for parsing
         if (depth > 0) {
-            links = get_links(body);
+            links = get_links(body, link);
             std::lock_guard<std::mutex> lock(mtx);
             size_t count = links.size();
             size_t index = 0;
@@ -215,7 +225,7 @@ void parse_link(const SS::Link& link, int depth, const SS::Config& conf) {
         } else { std::cout << M_HIT << "[SPIDER]:Linnk already in datadase: " << link.protocol << link.host << link.query << "\n"; }
 
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << ex.what() << "\n";
+        std::cerr << M_ERROR << ex.what() << "\n";
     }
 }
 
@@ -280,7 +290,7 @@ int main() {
 
         std::cout << M_GOOD << "[SPIDER]:Parsing completed!\n";
     } catch (const std::exception& ex) {
-        std::cout << M_ERROR << ex.what() << "\n";
+        std::cerr << M_ERROR << ex.what() << "\n";
     }
     return EXIT_SUCCESS;
 }
